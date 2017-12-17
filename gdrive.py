@@ -40,11 +40,17 @@ def list(id, url, mx, output_file):
 	if id and not url:
 		list_file(id, mx, output_file)
 	elif not id and url:
-		if url.find('id='):
+		if url.find('id=') != -1:
 			index = url.find('id=')+3
 			id = url[index:]
-			list_file(id, mx, output_file)
-
+		else:
+			if url.find('?usp=sharing') != -1:
+				url = url[:-12]
+			id = url.split('/')
+			id = id[-1]
+		list_file(id, mx, output_file)
+	elif not id and not url:
+		list_file()
 
 if __name__ == "__main__":
 	cli()
