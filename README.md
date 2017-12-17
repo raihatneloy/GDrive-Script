@@ -29,3 +29,16 @@ List filest in a directory using directory url (original/share url):
 
 Output the list in a file
 `./gdrive.py list -o <output_file_path>`
+
+## Download command
+
+Default download directory will be: `<stript dir>/output/`
+
+Download a directory or file using their id:
+`./gdrive.py download --id <directory/file id>`
+
+Download file from a file which was previously exported using the script
+`./gdrive.py download -f <file path>`
+
+Download file in a specific directory:
+`./gdrive.py download -f <file_path> -o <output_directory_path>`
