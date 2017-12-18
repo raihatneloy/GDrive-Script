@@ -28,7 +28,7 @@ def cli():
     """Gdrive Management"""
 
 
-def list_file(folder_id='root', max_files=1000, output_file=None):
+def list_file(folder_id='root', max_files=1000, output_file=None, output=True):
     results = service.files().list(
             q="'%s' in parents and trashed=False" % folder_id,
             pageSize=max_files
@@ -55,9 +55,11 @@ def list_file(folder_id='root', max_files=1000, output_file=None):
 
     if output_file:
         file_path.write(yaml.safe_dump({'files': files}, default_flow_style=False))
-    else:
+    elif output:
         for file in files:
             print "Name: %s Id: %s Type: %s" % (file['name'].ljust(max_name_len+1, ' '), file['id'].ljust(max_id_len+1, ' '), file['type'])
+
+    return files
 
 
 @cli.command()
@@ -82,6 +84,31 @@ def list(id, url, mx, output_file):
         list_file()
 
 
+def download_files(file_list, save_directory):
+    os.system('rm -rf %s' % save_directory)
+    os.system('mkdir -p %s' % save_directory)
+
+    for file in file_list:
+        try:
+            if file['type'] == 'application/vnd.google-apps.folder':
+                child_file_list = list_file(file['id'], output=False)
+                download_files(child_file_list, save_directory + '/' + file['name'])
+
+            else:
+                request = service.files().get_media(fileId=file['id'])
+                file_name = save_directory + '/' + file['name']
+                fh = io.FileIO(file_name, 'wb')
+                downloader = MediaIoBaseDownload(fh, request)
+
+                done = False
+
+                while done is False:
+                    status, done = downloader.next_chunk()
+                    print('Download %s %d%%.' % (file_name,int(status.progress() * 100)))
+        except:
+            pass
+
+
 @cli.command()
 @click.option('--id', help='ID of the file to download')
 @click.option('-f', '--file', help='Specify file to read info regarding download')
@@ -102,18 +129,7 @@ def download(id, file, output_dir):
                 'id': metadata['id']
             })
 
-    for file_info in to_download:
-        try:
-            request = service.files().get_media(fileId=file_info['id'])
-            fh = io.FileIO(output_dir + '/' + file_info['name'], 'wb')
-            downloader = MediaIoBaseDownload(fh, request)
-            done = False
-
-            while done is False:
-                status, done = downloader.next_chunk()
-                print('Download %d%%.' % int(status.progress() * 100))
-        except:
-            pass
+    download_files(to_download, output_dir)
 
 
 if __name__ == "__main__":
