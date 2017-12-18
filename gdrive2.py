@@ -57,7 +57,7 @@ def list_file(folder_id='root', max_files=1000, output_file=None, output=True):
         file_path.write(yaml.safe_dump({'files': files}, default_flow_style=False))
     elif output:
         for file in files:
-            print "Name: %s Id: %s Type: %s" % (file['name'].ljust(max_name_len+1, ' '), file['id'].ljust(max_id_len+1, ' '), file['type'])
+            print ("Name: %s Id: %s Type: %s" % (file['name'].ljust(max_name_len+1, ' '), file['id'].ljust(max_id_len+1, ' '), file['type']))
 
     return files
 
